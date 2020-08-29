@@ -4,25 +4,24 @@ import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.MojoFailureException
 import org.apache.maven.plugin.descriptor.PluginDescriptor
-import org.apache.maven.plugins.annotations.InstantiationStrategy
-import org.apache.maven.plugins.annotations.LifecyclePhase
-import org.apache.maven.plugins.annotations.Mojo
-import org.apache.maven.plugins.annotations.Parameter
-
+import org.apache.maven.plugins.annotations.*
+import org.apache.maven.project.MavenProject
 import java.io.File
+import kotlin.jvm.Throws
 
 @Mojo(
         name = "generate",
-        aggregator = true,
-        executionStrategy = "always",
-        inheritByDefault = false,
         instantiationStrategy = InstantiationStrategy.SINGLETON,
-        defaultPhase = LifecyclePhase.PACKAGE,
-        requiresDirectInvocation = true
+        defaultPhase = LifecyclePhase.INSTALL,
+        requiresDirectInvocation = true,
+        requiresDependencyResolution = ResolutionScope.RUNTIME
 )
 class GenerateMojo : AbstractMojo() {
     @Parameter(name = "type", defaultValue = "typeScript")
     private val type: String? = null
+
+    @Parameter(name = "packages")
+    private val packages: Array<String>? = null
 
     @Parameter(defaultValue = "\${plugin}", readonly = true)
     private val plugin: PluginDescriptor? = null
@@ -33,13 +32,15 @@ class GenerateMojo : AbstractMojo() {
     @Parameter(defaultValue = "\${project.build.directory}", readonly = true)
     private val target: File? = null
 
+    @Parameter(defaultValue = "\${project}", readonly = true)
+    private val mavenProject: MavenProject? = null
+
     @Throws(MojoExecutionException::class, MojoFailureException::class)
     override fun execute() {
-        println(type)
-        println(plugin!!.name)
-        println(basedir!!.absolutePath)
-        println(target!!.absolutePath)
-        println(123)
+        target?.let {
+            Runner.workWithTargetDir(
+                    it, type, packages!!, log, mavenProject)
+        }
     }
 
 }
