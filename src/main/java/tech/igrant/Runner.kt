@@ -3,6 +3,7 @@ package tech.igrant
 import org.apache.maven.plugin.logging.Log
 import org.apache.maven.project.MavenProject
 import java.io.File
+import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -51,25 +52,30 @@ class Runner {
                     restController.annotations.find {
                         LIST_OF_REQUEST_MAPPING.any { anna -> urlClassLoader.loadClass(anna.canonicalName) == it.annotationClass.java }
                     }?.let { annaOnClass ->
-                        log.info("find annaOnClass: ${annaOnClass.annotationClass.java.canonicalName} on class ${restController.canonicalName}}")
+                        //                        log.info("find annaOnClass: ${annaOnClass.annotationClass.java.canonicalName} on class ${restController.canonicalName}}")
                         val annotationInstanceValue = restController.getAnnotation(annaOnClass.annotationClass.java)
                         val commonHttpMethod = mapHttpMethod(annaOnClass, urlClassLoader, annotationInstanceValue)
-                        annaOnClass.javaClass.methods.forEach { m -> log.info("function name: ${m.name} of annaOnClass: ${annaOnClass.annotationClass.java.canonicalName}") }
+//                        annaOnClass.javaClass.methods.forEach { m -> log.info("function name: ${m.name} of annaOnClass: ${annaOnClass.annotationClass.java.canonicalName}") }
                         val baseUrl = (annaOnClass.javaClass.methods.first { m -> m.name == "value" }.invoke(annotationInstanceValue) as Array<*>)[0] as String
                         acc.addAll(
                                 // 只有打了 *Mapping 注解的函数，才需要返回一个对应的 http 请求
-                                restController.methods.mapNotNull { function ->
-                                    function.annotations.find {
+                                restController.methods.mapNotNull { method ->
+                                    method.annotations.find {
                                         LIST_OF_REQUEST_MAPPING.any { anna -> urlClassLoader.loadClass(anna.canonicalName) == it.annotationClass.java }
                                     }?.let { annOnFunction ->
                                         // 只有打了 *Mapping 注解的函数，才需要返回一个对应的 http 请求
-                                        val annOnFunctionInstance = function.getAnnotation(annOnFunction.annotationClass.java)
+                                        val annOnFunctionInstance = method.getAnnotation(annOnFunction.annotationClass.java)
                                         val httpMethod = commonHttpMethod
                                                 ?: mapHttpMethod(annOnFunction, urlClassLoader, annOnFunctionInstance)
                                         log.info("annOnFunctionInstance: $annOnFunctionInstance")
                                         val asArray = annOnFunction.javaClass.methods.first { method -> method.name == "value" }.invoke(annOnFunctionInstance) as Array<*>
                                         val url = merge(baseUrl, getPath(asArray))
-                                        HttpContextDesc(httpMethod = httpMethod, url = url)
+                                        HttpContextDesc(
+                                                url = url,
+                                                httpMethod = httpMethod,
+                                                responseBodyClass = method.genericReturnType.typeName,
+                                                listOfParams = mapToParamsDesc(method = method)
+                                        )
                                     }
                                 }.toList())
                     }
@@ -77,6 +83,17 @@ class Runner {
                 })
 
                 resultList.forEach { r -> log.info(r.toString()) }
+            }
+        }
+
+        private fun mapToParamsDesc(method: Method): List<ParamsDesc> {
+            return method.parameters.map { parameter ->
+                ParamsDesc(
+                        paramsClass = parameter.type.canonicalName,
+                        require = false,
+                        asQueryParamKey = "",
+                        name = parameter.name
+                )
             }
         }
 
