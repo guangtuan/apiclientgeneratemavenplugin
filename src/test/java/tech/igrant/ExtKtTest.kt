@@ -14,4 +14,13 @@ class ExtKtTest {
         )
     }
 
+    @Test
+    fun classNameToVariableName() {
+        val expected = "testClass"
+        val canonicalName = "com.example.TestClass"
+        assertEquals(expected, canonicalName.classNameToVariableName())
+        val simpleName = "TestClass"
+        assertEquals(expected, simpleName.classNameToVariableName())
+    }
+
 }

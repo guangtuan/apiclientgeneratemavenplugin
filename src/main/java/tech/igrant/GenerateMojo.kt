@@ -39,7 +39,7 @@ class GenerateMojo : AbstractMojo() {
     override fun execute() {
         target?.let {
             Runner.workWithTargetDir(
-                    it, type, packages!!, log, mavenProject)
+                    type, it, packages!!, mavenProject, log)
         }
     }
 

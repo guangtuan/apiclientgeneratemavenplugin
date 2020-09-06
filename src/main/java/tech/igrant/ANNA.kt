@@ -9,5 +9,7 @@ enum class ANNA(val canonicalName: String) {
     DELETE_MAPPING("org.springframework.web.bind.annotation.DeleteMapping"),
     PATCH_MAPPING("org.springframework.web.bind.annotation.PatchMapping"),
     REQUEST_MAPPING("org.springframework.web.bind.annotation.RequestMapping"),
-
+    PATH_VARIABLE("org.springframework.web.bind.annotation.PathVariable"),
+    REQUEST_PARAM("org.springframework.web.bind.annotation.RequestParam"),
+    REQUEST_BODY("org.springframework.web.bind.annotation.RequestBody")
 }
