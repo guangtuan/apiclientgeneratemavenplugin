@@ -1,6 +1,5 @@
 package tech.igrant
 
-import org.apache.maven.plugin.logging.Log
 import org.junit.Assert
 import org.junit.Test
 import java.io.File
@@ -77,7 +76,10 @@ class TestGetApiDescriptions {
     @Test
     fun getApiDesc() {
 
-        val path = System.getenv("TARGET_DIR")
+        val classPathsKey = "java.class.path"
+        val classPaths = System.getProperty(classPathsKey)
+        val path = classPaths.split(":").first { !it.endsWith(".jar") && it.contains("test-classes") }
+        println("path is $path")
         val targetDir = File(path)
         val actual = ApiDescGetter.getApiDescriptions(
                 targetDir = targetDir,
@@ -90,73 +92,6 @@ class TestGetApiDescriptions {
         sortedExpected.forEachIndexed { index, desc ->
             Assert.assertEquals(desc, sortedActual[index])
         }
-    }
-
-    class MockLog : Log {
-        override fun warn(content: CharSequence?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun warn(content: CharSequence?, error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun warn(error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun info(content: CharSequence?) {
-            println(content)
-        }
-
-        override fun info(content: CharSequence?, error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun info(error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun isInfoEnabled(): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun isErrorEnabled(): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun isWarnEnabled(): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun error(content: CharSequence?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun error(content: CharSequence?, error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun error(error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun isDebugEnabled(): Boolean {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun debug(content: CharSequence?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun debug(content: CharSequence?, error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun debug(error: Throwable?) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
     }
 
 }
